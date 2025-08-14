@@ -1,0 +1,30 @@
+{
+    "version": 1,
+    "job_id": "IFEU-20250813-WRB9PPNBVD",
+    "query": {
+        "dataset": "IFEU.IMPACT",
+        "schema": "ohlcv-1d",
+        "symbols": [
+            "BRN.FUT",
+            "DBI.FUT",
+            "G.FUT"
+        ],
+        "stype_in": "parent",
+        "stype_out": "instrument_id",
+        "start": 1723420800000000000,
+        "end": 1754956800000000000,
+        "limit": null,
+        "encoding": "dbn",
+        "compression": "zstd"
+    },
+    "customizations": {
+        "pretty_px": false,
+        "pretty_ts": false,
+        "map_symbols": false,
+        "split_symbols": false,
+        "split_duration": null,
+        "split_size": null,
+        "packaging": null,
+        "delivery": "download"
+    }
+}
