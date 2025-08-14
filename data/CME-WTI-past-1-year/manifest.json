@@ -1,0 +1,41 @@
+{
+    "job_id": "IFEU-20250814-WKWEU8FQLW",
+    "files": [
+        {
+            "filename": "condition.json",
+            "size": 41985,
+            "hash": "sha256:55146783c7f4d10a2d96ef12eb630605967f0dcd8974c6fd42e795be061f9927",
+            "urls": {
+                "https": "https://api.databento.com/v0/batch/download/B8NAXY57/IFEU-20250814-WKWEU8FQLW/condition.json",
+                "ftp": "ftp://ftp.databento.com/B8NAXY57/IFEU-20250814-WKWEU8FQLW/condition.json"
+            }
+        },
+        {
+            "filename": "metadata.json",
+            "size": 691,
+            "hash": "sha256:65b728e5374e2327e77a69e2cd1aaea7485bbc88d3a269e9588823e88443132e",
+            "urls": {
+                "https": "https://api.databento.com/v0/batch/download/B8NAXY57/IFEU-20250814-WKWEU8FQLW/metadata.json",
+                "ftp": "ftp://ftp.databento.com/B8NAXY57/IFEU-20250814-WKWEU8FQLW/metadata.json"
+            }
+        },
+        {
+            "filename": "symbology.json",
+            "size": 446165,
+            "hash": "sha256:12e9df4b745b0df034fe9e856fa297138299e8eae7ba38bca5b6b632cf187fb9",
+            "urls": {
+                "https": "https://api.databento.com/v0/batch/download/B8NAXY57/IFEU-20250814-WKWEU8FQLW/symbology.json",
+                "ftp": "ftp://ftp.databento.com/B8NAXY57/IFEU-20250814-WKWEU8FQLW/symbology.json"
+            }
+        },
+        {
+            "filename": "ifeu-impact-20240701-20250812.ohlcv-1d.dbn.zst",
+            "size": 810651,
+            "hash": "sha256:b92896a0bddea467b6fae8c356c651f7b08850db47a657e5e495e45475d488f9",
+            "urls": {
+                "https": "https://api.databento.com/v0/batch/download/B8NAXY57/IFEU-20250814-WKWEU8FQLW/ifeu-impact-20240701-20250812.ohlcv-1d.dbn.zst",
+                "ftp": "ftp://ftp.databento.com/B8NAXY57/IFEU-20250814-WKWEU8FQLW/ifeu-impact-20240701-20250812.ohlcv-1d.dbn.zst"
+            }
+        }
+    ]
+}
