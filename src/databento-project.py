@@ -67,6 +67,8 @@ def identify_product(symbol):
             return "Heating Oil"
         elif symbol.startswith("RB"):
             return "Gasoline"
+        elif symbol.startswith("WBS"):
+            return "WTI"
         elif symbol.startswith(("HO","RB","CL","NG","ZL")):  # CME examples
             return symbol[:2]  # simple product code
     return "Unknown"
@@ -102,14 +104,61 @@ outright_only2 = filter_outright(df_2, product_prefixes=[])  # optional prefix f
 outright_only2 = parse_contracts(outright_only2, extract_ice_contract_info)
 forward_curve_data2 = adjust_prices(outright_only2)
 
-print("ICE data")
-print(forward_curve_data0[['ts_event', 'symbol', 'expiration', 'close', 'product_type']].head())
-print("\nCME data")
-print(forward_curve_data1[['ts_event', 'symbol', 'expiration', 'close', 'product_type']].head())
-print("\nWTI data")
-print(forward_curve_data2[['ts_event', 'symbol', 'expiration', 'close', 'product_type']].head())
+# print("ICE data")
+# print(forward_curve_data0[['ts_event', 'symbol', 'expiration', 'close', 'product_type']].head())
+# print("\nCME data")
+# print(forward_curve_data1[['ts_event', 'symbol', 'expiration', 'close', 'product_type']].head())
+# print("\nWTI data")
+# print(forward_curve_data2[['ts_event', 'symbol', 'expiration', 'close', 'product_type']].head())
 
-#Curve Plotting# #
+#Plotting Raw Curve
+# def get_forward_curve(df, product_type, target_dates):
+#     df["ts_event"] = pd.to_datetime(df["ts_event"])
+#     target_dates = [pd.to_datetime(d).date() for d in target_dates]
+#     curves = {}
+#     for date in target_dates:
+#         df_filtered = df[
+#             df["product_type"].str.contains(product_type, case=False, na=False) &
+#             (df["ts_event"].dt.date == date)
+#         ].copy()
+#         df_filtered = df_filtered.sort_values("expiration")
+#         curves[date] = df_filtered
+#     return curves
+
+# def plot_forward_curves_raw(df, products, target_dates):
+#     for product in products:
+#         curves = get_forward_curve(df, product, target_dates)
+#         plt.figure(figsize=(10, 6))
+#         plotted_any = False
+
+#         for date, df_curve in curves.items():
+#             if df_curve.empty:
+#                 continue
+            
+#             df_curve = df_curve.drop_duplicates(subset="expiration")
+#             x = df_curve["expiration"]
+#             y = df_curve["close"]
+
+#             # Just plot the raw points connected with a line
+#             plt.plot(x, y, marker='o', linestyle='-', label=str(date))
+#             plotted_any = True
+
+#         if plotted_any:
+#             plt.title(f"{product} Forward Curves")
+#             plt.xlabel("Expiration Date")
+#             plt.ylabel("Close Price")
+#             plt.grid(True)
+#             plt.xticks(rotation=45)
+#             plt.legend()
+#             plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%b-%y'))
+#             plt.gca().xaxis.set_major_locator(mdates.AutoDateLocator())
+#             plt.show()
+#         else:
+#             print(f"No data found for product: {product} on target dates.")
+
+
+
+#Curve Plotting-Cubic Spline#
 # def get_forward_curve(df, product_type, target_dates):
 #     df["ts_event"] = pd.to_datetime(df["ts_event"])
 #     target_dates = [pd.to_datetime(d).date() for d in target_dates]
@@ -158,89 +207,92 @@ print(forward_curve_data2[['ts_event', 'symbol', 'expiration', 'close', 'product
 #         else:
 #             print(f"No data found for product: {product} on target dates.")
 
+
 # # Input target dates and products
 # target_dates = ["2025-07-11", "2025-08-11", "2025-02-11", "2024-08-12"]
-# products = ["Brent", "Dubai"]
+# products = ["WTI"]
 
-# plot_forward_curves(outright_only, products, target_dates)
-
-
+# plot_forward_curves(outright_only2, products, target_dates)
 
 
-#Plot ICE together#
-# def plot_all_products_together(df, products, target_dates):
-#     plt.figure(figsize=(12, 6))
+
+
+#Plot Curves Together#
+def plot_all_products_together(dfs, products, target_dates, xlim=None, ylim=None):
+    plt.figure(figsize=(12, 6))
     
-#     # Assign a distinct color for each product
-#     product_colors = {
-#         "Gasoil": "blue",
-#         "Brent": "green",
-#         "Dubai": "orange"
-#     }
+    product_colors = {
+        "Gasoil": "blue",
+        "Brent": "green",
+        "Dubai": "orange",
+        "Heating Oil": "red",
+        "Gasoline": "purple",
+        "WTI": "brown"
+    }
     
-#     # Line styles for different target dates
-#     line_styles = ['-', '--', '-.', ':']
+    line_styles = ['-', '--', '-.', ':']
     
-#     df["ts_event"] = pd.to_datetime(df["ts_event"])
-#     target_dates_parsed = [pd.to_datetime(d).date() for d in target_dates]
+    target_dates_parsed = [pd.to_datetime(d).date() for d in target_dates]
     
-#     for i, product in enumerate(products):
-#         color = product_colors.get(product, "black")
+    for df in dfs:
+        df["ts_event"] = pd.to_datetime(df["ts_event"])
         
-#         for j, date in enumerate(target_dates_parsed):
-#             style = line_styles[j % len(line_styles)]
+        for i, product in enumerate(products):
+            color = product_colors.get(product, "black")
             
-#             df_curve = df[df["product_type"].str.contains(product, case=False, na=False) & 
-#                           (df["ts_event"].dt.date == date)].copy()
-#             if df_curve.empty:
-#                 continue
-            
-#             df_curve = df_curve.sort_values("expiration").drop_duplicates(subset="expiration")
-            
-#             x = (df_curve["expiration"] - df_curve["expiration"].min()).dt.days
-#             y = df_curve["close"]
-            
-#             # Keep only finite values
-#             mask = np.isfinite(x) & np.isfinite(y)
-#             x = x[mask].to_numpy()
-#             y = y[mask].to_numpy()
-            
-#             # Ensure strictly increasing x
-#             _, idx = np.unique(x, return_index=True)
-#             x = x[idx]
-#             y = y[idx]
-            
-#             if len(x) >= 2:
-#                 cs = CubicSpline(x, y)
-#                 x_smooth = np.linspace(x.min(), x.max(), 300)
-#                 y_smooth = cs(x_smooth)
-#                 dates_smooth = df_curve["expiration"].min() + pd.to_timedelta(x_smooth, unit='D')
-#                 plt.plot(dates_smooth, y_smooth, color=color, linestyle=style, 
-#                          label=f"{product} - {date}")
-            
-#             # plot raw points as fallback
-#             plt.scatter(df_curve["expiration"], y, color=color, edgecolor='black', marker='o')
+            for j, date in enumerate(target_dates_parsed):
+                style = line_styles[j % len(line_styles)]
+                
+                df_curve = df[df["product_type"].str.contains(product, case=False, na=False) & 
+                              (df["ts_event"].dt.date == date)].copy()
+                if df_curve.empty:
+                    continue
+                
+                df_curve = df_curve.sort_values("expiration").drop_duplicates(subset="expiration")
+                
+                x = (df_curve["expiration"] - df_curve["expiration"].min()).dt.days
+                y = df_curve["close"]
+                
+                mask = np.isfinite(x) & np.isfinite(y)
+                x = x[mask].to_numpy()
+                y = y[mask].to_numpy()
+                
+                _, idx = np.unique(x, return_index=True)
+                x = x[idx]
+                y = y[idx]
+                
+                if len(x) >= 2:
+                    cs = CubicSpline(x, y)
+                    x_smooth = np.linspace(x.min(), x.max(), 300)
+                    y_smooth = cs(x_smooth)
+                    dates_smooth = df_curve["expiration"].min() + pd.to_timedelta(x_smooth, unit='D')
+                    plt.plot(dates_smooth, y_smooth, color=color, linestyle=style, 
+                             label=f"{product} - {date}")
+                
+                plt.scatter(df_curve["expiration"], y, color=color, edgecolor='black', marker='o')
     
-#     # Format x-axis as Month-Year
-#     plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%b-%y'))
-#     plt.gca().xaxis.set_major_locator(mdates.AutoDateLocator())
-#     plt.xticks(rotation=45)
+    plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%b-%y'))
+    plt.gca().xaxis.set_major_locator(mdates.AutoDateLocator())
+    plt.xticks(rotation=45)
     
-#     plt.title("Forward Curves for Gasoil, Brent, and Dubai")
-#     plt.xlabel("Expiration Date")
-#     plt.ylabel("Close Price")
-#     plt.grid(True)
-#     plt.legend()
-#     plt.show()
+    # Set axis limits if provided
+    if xlim is not None:
+        plt.xlim(xlim)
+    if ylim is not None:
+        plt.ylim(ylim)
+    
+    plt.title("Forward Curve ICE vs CME - 1-year historical")
+    plt.xlabel("Expiration Date")
+    plt.ylabel("Close Price")
+    plt.grid(True)
+    plt.legend()
+    plt.show()
 
-# target_dates = ["2025-07-11", "2025-08-11", "2025-02-11", "2024-08-12"]
-# products = ["Gasoil", "Brent", "Dubai"]
 
-# plot_all_products_together(outright_only0, products, target_dates)
+xlim = (pd.Timestamp('2025-07-01'),pd.Timestamp('2026-02-28'))
+ylim = (70,110)
+dfs_to_plot = [outright_only0,outright_only1, outright_only2]
+target_dates = ["2024-08-12"]
+products = ["Brent", "Dubai","WTI","Gasoil", "Heating Oil", "Gasoline"]
 
-
-
-# x = df_curve["expiration"].map(datetime.toordinal) 
-# y = df_curve["close"] 
-# spline = UnivariateSpline(x, y, s=0) 
-# xs = np.linspace(x.min(), x.max(), 200)
+plot_all_products_together(dfs_to_plot, products, target_dates,xlim,ylim)
